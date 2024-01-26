@@ -4,5 +4,13 @@ version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
+[server-dependencies]
+ProfileService = "alreadypro/profileservice@1.0.4"
+
 [dependencies]
-knit = "sleitnick/knit@1.6.0"
+Knit = "sleitnick/knit@1.6.0"
+Comm = "sleitnick/comm@1.0.1"
+Component = "sleitnick/component@2.4.8"
+Timer = "sleitnick/timer@1.1.2"
+Trove = "sleitnick/trove@1.1.0"
+Signal = "sleitnick/signal@2.0.1"
