@@ -9,12 +9,12 @@ local Loader = require(ReplicatedStorage.Packages.Loader)
 
 --[ Object References ]--
 
-local Services: Folder = script.Parent.Services
-local Components: Folder = script.Parent.Components
+local Controllers: Folder = script.Parent:WaitForChild("Controllers")
+local Components: Folder = script.Parent:WaitForChild("Components")
 
 --[ Boostrapper ]--
 
-Loader.LoadDescendants(Services, Loader.MatchesName("Service$"))
+Loader.LoadDescendants(Controllers, Loader.MatchesName("Controller$"))
 Knit.Start():andThen(function()
 	-- Load components once Knit has started
 	Loader.LoadChildren(Components)
