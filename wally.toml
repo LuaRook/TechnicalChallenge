@@ -1,0 +1,8 @@
+[package]
+name = "luarook/suitup-technical-challenge"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+knit = "sleitnick/knit@1.6.0"
