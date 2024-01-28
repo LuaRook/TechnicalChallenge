@@ -18,7 +18,6 @@ local Component = require(ReplicatedStorage.Packages.Component)
 local Timer = require(ReplicatedStorage.Packages.Timer)
 
 --[ Extensions ]--
-
 local TroveExtension = require(ReplicatedStorage.Shared.Extensions.TroveExtension)
 
 --[ Root ]--
@@ -29,21 +28,15 @@ local SpawnPad = Component.new({
 })
 
 --[ Object References ]--
-
 local Assets: Folder = ReplicatedStorage.Assets
 local FriendlyAssets: Folder = Assets.Friendlies
 local FriendliesFolder: Folder = workspace.Friendlies
 
 --[ Constants ]--
-
 local SPAWNED_TAG: string = "SpawnedFriendly"
 local DEFAULT_TYPE: string = "Cow"
 local ROTATION_AMOUNT: number = 75
 local MAX_FRIENDLIES: number = 5
-
---[ Variables ]--
-
---[ Shorthands ]--
 
 --[ Local Functions ]--
 
