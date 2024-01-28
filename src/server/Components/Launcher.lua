@@ -36,6 +36,7 @@ Launcher.Client = {
 
 --[ Object References ]--
 
+local BoundsFolder: Folder = workspace.Map.Bounds
 local Assets: Folder = ReplicatedStorage.Assets
 local ProjectileAssets: Folder = Assets.Projectiles
 local ProjectilesFolder: Folder = workspace.Projectiles
@@ -65,7 +66,7 @@ function Launcher:_handleRayHit()
 			impactSound:Play()
 		end
 
-		local impactParticle: ParticleEmitter? = cosmeticBullet:FindFirstChild("ImpactParticle")
+		local impactParticle: ParticleEmitter? = cosmeticBullet:FindFirstChild("ImpactParticle", true)
 		if impactParticle then
 			impactParticle:Emit(30)
 		end
@@ -95,6 +96,8 @@ function Launcher:_handleCastTerminating()
 		-- Make cosmetic bullet exist for half a second for effects
 		local cosmeticBullet: BasePart? = cast.RayInfo.CosmeticBulletObject
 		if cosmeticBullet then
+			cosmeticBullet.Transparency = 1
+
 			local trail: Trail? = cosmeticBullet:FindFirstChildOfClass("Trail")
 			if trail then
 				trail.Enabled = false
@@ -154,7 +157,7 @@ function Launcher:Construct()
 
 	-- Create params for caster behavior
 	self.RaycastParams = RaycastParams.new()
-	self.RaycastParams.FilterDescendantsInstances = { self.Character, ProjectilesFolder }
+	self.RaycastParams.FilterDescendantsInstances = { self.Character, BoundsFolder, ProjectilesFolder }
 	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 end
 
