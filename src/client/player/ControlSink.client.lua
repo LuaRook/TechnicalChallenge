@@ -12,7 +12,6 @@
 local ContextActionService = game:GetService("ContextActionService")
 
 --[ Constants ]--
-
 local SINK_ACTIONS: { Enum.PlayerActions } = {
 	Enum.PlayerActions.CharacterForward,
 	Enum.PlayerActions.CharacterBackward,
@@ -20,13 +19,11 @@ local SINK_ACTIONS: { Enum.PlayerActions } = {
 }
 
 --[ Local Functions ]--
-
 local function sinkInput()
 	return Enum.ContextActionResult.Sink
 end
 
 --[ Logic ]--
-
 ContextActionService:BindActionAtPriority(
 	"SinkControl",
 	sinkInput,
