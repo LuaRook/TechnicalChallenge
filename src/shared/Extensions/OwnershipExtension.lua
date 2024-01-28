@@ -43,6 +43,12 @@ function OwnershipExtension.Constructing(component)
 	-- Store reference to owner ID
 	local ownerId: number = component.Instance:GetAttribute("OwnerId")
 
+	-- If no owner ID is specified, assume the character is the instance itself.
+	if not ownerId then
+		component.Character = component.Instance
+		return
+	end
+
 	-- If constructing on client, it's garaunteed that the LocalPlayer is the owner because of the client-sided ShouldConstruct check.
 	component.Player = if IS_CLIENT then LocalPlayer else GetOwnerFromId(ownerId)
 
