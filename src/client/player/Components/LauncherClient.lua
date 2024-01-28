@@ -32,6 +32,7 @@ local LauncherClient = Component.new({
 
 --[ Object References ]--
 
+local BoundsFolder: Folder = workspace.Map.Bounds
 local Camera: Camera = workspace.CurrentCamera
 local RayParams: RaycastParams = RaycastParams.new()
 RayParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -49,7 +50,7 @@ local CAST_DISTANCE: number = 1000
 ]]
 local function GetMousePosition(localCharacter: Model): Vector3
 	-- Update parameters for mouse raycast
-	RayParams.FilterDescendantsInstances = { localCharacter }
+	RayParams.FilterDescendantsInstances = { localCharacter, BoundsFolder }
 
 	-- Raycast from mouse origin
 	local mousePosition: Vector2 = UserInputService:GetMouseLocation()
