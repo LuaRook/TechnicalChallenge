@@ -10,9 +10,13 @@ local SoundService = game:GetService("SoundService")
 	@return boolean Determines if the attachment was successful.
 ]]
 return function(soundName: string, parent: Instance): Sound?
-	-- Check arguments
-	assert(typeof(soundName) == "string", `Expected string for soundName; got {typeof(soundName)} instead.`)
-	assert(typeof(parent) == "Instance", `Expected Instance for parent; got {typeof(parent)} instead.`)
+	-- Check arguments. If statements are used over assert to ensure errors don't stop execution.
+	if typeof(soundName) ~= "string" then
+		return warn(`Expected string for soundName; got {typeof(soundName)} instead.`)
+	end
+	if typeof(parent) ~= "Instance" then
+		return warn(`Expected Instance for parent; got {typeof(parent)} instead.`)
+	end
 
 	-- Check for existing sound
 	local existingSound: Sound? = parent:FindFirstChild(soundName, true)
