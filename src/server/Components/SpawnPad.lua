@@ -15,7 +15,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --[ Dependencies ]--
 local Component = require(ReplicatedStorage.Packages.Component)
 local Timer = require(ReplicatedStorage.Packages.Timer)
-local RigFriendly = require(ReplicatedStorage.Shared.Modules.RigFriendly)
+local RigFriendly = require(script.Parent.Parent.Modules.RigFriendly)
 
 --[ Extensions ]--
 local TroveExtension = require(ReplicatedStorage.Shared.Extensions.TroveExtension)
