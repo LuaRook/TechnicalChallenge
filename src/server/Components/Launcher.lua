@@ -114,7 +114,11 @@ end
 
 function Launcher:Fire(mousePosition: Vector3)
 	-- Check if weapon can be fired
-	if not self.Client.CanFire:GetFor(self.Player) or not self.Humanoid or self.Humanoid.Health <= 0 then
+	if
+		(self.Player and not self.Client.CanFire:GetFor(self.Player))
+		or not self.Humanoid
+		or self.Humanoid.Health <= 0
+	then
 		return
 	end
 
@@ -135,7 +139,11 @@ function Launcher:Fire(mousePosition: Vector3)
 		self.FiringSound:Play()
 	end
 
-	-- Handle firing debounce
+	-- Handle firing debounce if player exists.
+	if not self.Player then
+		return
+	end
+
 	self.Client.CanFire:SetFor(self.Player, false)
 	task.delay(self.RPM, function()
 		self.Client.CanFire:SetFor(self.Player, true)
