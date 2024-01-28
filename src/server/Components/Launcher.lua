@@ -15,6 +15,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --[ Dependencies ]--
 local Component = require(ReplicatedStorage.Packages.Component)
 local FastcastRedux = require(ReplicatedStorage.Packages.FastcastRedux)
+local Signal = require(ReplicatedStorage.Packages.Signal)
 local LoadSound = require(ReplicatedStorage.Shared.Modules.LoadSound)
 
 --[ Extensions ]--
@@ -38,30 +39,35 @@ Launcher.Client = {
 
 local BoundsFolder: Folder = workspace.Map.Bounds
 local Assets: Folder = ReplicatedStorage.Assets
-local ProjectileAssets: Folder = Assets.Projectiles
-local ProjectilesFolder: Folder = workspace.Projectiles
-local EggProjectile: BasePart = ProjectileAssets.Egg
+local CosmeticAssets: Folder = Assets.Cosmetics
+local CosmeticsFolder: Folder = workspace.Cosmetics
+local EggCosmetic: BasePart = CosmeticAssets.Egg
 
 --[ Constants ]--
 
-local CACHE_SIZE: number = 25
 local DEFAULT_DAMAGE: number = 15
 local DEFAULT_SPEED: number = 500
 local DEFAULT_RPM: number = 900
 
 --[ Local Functions ]--
 
-local function NewCasterBehavior(castParams: RaycastParams, provider)
+local function NewCasterBehavior(castParams: RaycastParams, cosmeticTemplate: BasePart)
 	local behavior = FastcastRedux.newBehavior()
 	behavior.Acceleration = Vector3.yAxis * -workspace.Gravity
 	behavior.RaycastParams = castParams
-	behavior.CosmeticBulletProvider = provider
+
+
+	-- If this were a larger scale game, I'd use PartCache instead of the two lines below; however,
+	-- this is a singleplayer experience that won't have much bullets being used.
+	behavior.CosmeticBulletTemplate = cosmeticTemplate
+	behavior.CosmeticBulletContainer = CosmeticsFolder
+
 	return behavior
 end
 
 function Launcher:_handleRayHit()
 	self._trove:Connect(self._caster.RayHit, function(_, result, _, cosmeticBullet: BasePart)
-		local impactSound: Sound? = LoadSound(cosmeticBullet:GetAttribute("Sound"), cosmeticBullet)
+		local impactSound: Sound? = LoadSound(cosmeticBullet.Name, cosmeticBullet)
 		if impactSound then
 			impactSound:Play()
 		end
@@ -71,13 +77,10 @@ function Launcher:_handleRayHit()
 			impactParticle:Emit(30)
 		end
 
-		-- Attempt to get character and humanoid
+		-- Fire hit signal to allow scripts to determine how they handle hits
 		local hitModel: Model? = result.Instance:FindFirstAncestorOfClass("Model")
-		local humanoid: Humanoid? = hitModel and hitModel:FindFirstChildOfClass("Humanoid")
-
-		-- Damage humanoid if health is above 0
-		if humanoid and humanoid.Health > 0 then
-			humanoid:TakeDamage(self.Damage)
+		if hitModel then
+			self.TargetHit:Fire(hitModel)
 		end
 	end)
 end
@@ -103,8 +106,12 @@ function Launcher:_handleCastTerminating()
 				trail.Enabled = false
 			end
 
+			-- Fire signal for cast termination
+			self.CastTerminating:Fire()
+
+			-- Destroy cosmetic bullet
 			task.delay(0.5, function()
-				self._provider:ReturnPart(cosmeticBullet)
+				cosmeticBullet:Destroy()
 			end)
 		end
 	end)
@@ -112,23 +119,31 @@ end
 
 --[ Public Functions ]--
 
+--[[
+	Changes the cosmetic bullet template. Slightly hacky, only use when absolutely necessary.
+
+	@param template string The name of the cosmetic template to change to.
+]]
+function Launcher:ChangeCosmeticTemplate(templateName: string)
+	self._behavior.CosmeticBulletTemplate = CosmeticAssets:FindFirstChild(templateName)
+end
+
 function Launcher:Fire(mousePosition: Vector3)
 	-- Check if weapon can be fired
 	if
 		(self.Player and not self.Client.CanFire:GetFor(self.Player))
-		or not self.Humanoid
-		or self.Humanoid.Health <= 0
+		or (self.Humanoid and self.Humanoid.Health <= 0)
 	then
 		return
 	end
 
-	-- Cast projectile
+	-- Cast Cosmetic
 	local muzzlePosition: Vector3 = self.MuzzleAttachment.WorldPosition
 	local mouseDirection: Vector3 = (mousePosition - muzzlePosition).Unit
-	local castedProjectile = self._caster:Fire(muzzlePosition, mouseDirection, DEFAULT_SPEED, self._behavior)
+	local castedCosmetic = self._caster:Fire(muzzlePosition, mouseDirection, DEFAULT_SPEED, self._behavior)
 
 	-- Handle cosmetic effects
-	local cosmeticBullet: BasePart = castedProjectile.RayInfo.CosmeticBulletObject
+	local cosmeticBullet: BasePart = castedCosmetic.RayInfo.CosmeticBulletObject
 	local trail: Trail? = cosmeticBullet:FindFirstChildOfClass("Trail")
 	if trail then
 		trail.Enabled = true
@@ -152,29 +167,35 @@ end
 
 --[ Initializers ]--
 function Launcher:Construct()
-	-- Setup configuration
-	self.CosmeticTemplate = ProjectileAssets:FindFirstChild(self.Instance:GetAttribute("CosmeticName")) or EggProjectile -- Default to egg if projectile doesn't exist
+	-- Setup cosmetic object
+	local cosmeticName: string? = self.Instance:GetAttribute("Cosmetic")
+	self.CosmeticTemplate = if cosmeticName
+		then (CosmeticAssets:FindFirstChild(cosmeticName) or EggCosmetic)
+		else EggCosmetic
+
+	-- Configure important values
 	self.Damage = self.Instance:GetAttribute("Damage") or DEFAULT_DAMAGE
 	self.Speed = self.Instance:GetAttribute("Speed") or DEFAULT_SPEED
 	self.RPM = 60 / (self.Instance:GetAttribute("RPM") or DEFAULT_RPM)
 
 	-- Object references
-	self.Humanoid = self.Character:WaitForChild("Humanoid")
+	self.Humanoid = self.Character:FindFirstChildOfClass("Humanoid", true)
 	self.MuzzleAttachment = self.Instance:WaitForChild("Muzzle")
 	self.FiringSound = LoadSound(self.Instance:GetAttribute("Sound"), self.MuzzleAttachment)
 
 	-- Create params for caster behavior
 	self.RaycastParams = RaycastParams.new()
-	self.RaycastParams.FilterDescendantsInstances = { self.Character, BoundsFolder, ProjectilesFolder }
+	self.RaycastParams.FilterDescendantsInstances = { self.Character, BoundsFolder, CosmeticsFolder }
 	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 end
 
 function Launcher:Start()
 	-- Setup fastcast
 	self._caster = FastcastRedux.new()
-	self._provider =
-		self._trove:Add(FastcastRedux.PartCache.new(self.CosmeticTemplate, CACHE_SIZE, ProjectilesFolder), "Dispose")
-	self._behavior = NewCasterBehavior(self.RaycastParams, self._provider)
+	self._behavior = NewCasterBehavior(self.RaycastParams, self.CosmeticTemplate)
+
+	self.CastTerminating = self._trove:Add(Signal.new())
+	self.TargetHit = self._trove:Add(Signal.new())
 
 	-- Setup FastCast connections
 	self:_handleRayHit()

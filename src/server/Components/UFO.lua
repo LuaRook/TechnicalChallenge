@@ -15,6 +15,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --[ Dependencies ]--
 local Component = require(ReplicatedStorage.Packages.Component)
 local LoadSound = require(ReplicatedStorage.Shared.Modules.LoadSound)
+local LauncherComponent = require(script.Parent.Launcher)
 
 --[ Extensions ]--
 local TroveExtension = require(ReplicatedStorage.Shared.Extensions.TroveExtension)
@@ -116,6 +117,13 @@ function UFO:AttackPlayer(player: Player, projectileType: string)
 	-- Make UFO track player
 
 	-- Fire launcher with projectile type
+	if not self.Launcher then
+		self.Instance:SetAttribute("Attacking", false)
+		return
+	end
+
+	self.Launcher:ChangeCosmeticTemplate(projectileType)
+	self.Instance:SetAttribute("Attacking", false)
 end
 
 --[[
@@ -173,6 +181,14 @@ end
 
 --[ Initializers ]--
 function UFO:Start()
+	-- Incorporate composition through using launcher for attacks
+	self._trove:AddPromise(LauncherComponent:WaitForInstance(self.Instance):andThen(function(launcherComponent)
+		self.Launcher = launcherComponent
+	end))
+end
+
+function UFO:Construct()
+	-- Object references
 	self.CenterAtt = self.Instance.CenterAtt
 	self.AlignPosition = self.CenterAtt.AlignPosition
 	-- self.AlignOrientation
