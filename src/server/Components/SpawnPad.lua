@@ -5,8 +5,7 @@
 	Version: 0.0.1
 
 	Description:
-		No description provided.
-
+		Handles spawning logic for friendlies.
 --]]
 
 --[ Roblox Services ]--
@@ -16,6 +15,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --[ Dependencies ]--
 local Component = require(ReplicatedStorage.Packages.Component)
 local Timer = require(ReplicatedStorage.Packages.Timer)
+local RigFriendly = require(ReplicatedStorage.Shared.Modules.RigFriendly)
 
 --[ Extensions ]--
 local TroveExtension = require(ReplicatedStorage.Shared.Extensions.TroveExtension)
@@ -90,6 +90,9 @@ function SpawnPad:Spawn()
 	-- Add spawned tag to friendly asset
 	friendlyAsset.Parent = FriendliesFolder
 	friendlyAsset:AddTag(SPAWNED_TAG)
+
+	-- Rig friendly model so it can be beamed up
+	RigFriendly(friendlyAsset)
 end
 
 --[[
