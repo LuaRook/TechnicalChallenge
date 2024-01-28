@@ -19,6 +19,7 @@ local RunService = game:GetService("RunService")
 
 --[ Object References ]--
 local Character: Model = script.Parent
+local RootPart: BasePart = Character.PrimaryPart
 local Waist: Motor6D = Character.UpperTorso.Waist
 local Humanoid: Humanoid = Character.Humanoid
 
@@ -43,4 +44,7 @@ end
 
 -- Roblox will automatically unbind the camera updater when the character is reset.
 RunService:BindToRenderStep("Camera", Enum.RenderPriority.Camera.Value, onUpdate)
+
+-- Prevent character rotation
 Humanoid.AutoRotate = false
+RootPart.Orientation = Vector3.zero
