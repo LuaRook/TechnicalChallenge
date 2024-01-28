@@ -1,3 +1,9 @@
+--[ Await Game Loaded ]--
+
+if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
+
 --[ Roblox Services ]--
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -9,8 +15,8 @@ local Loader = require(ReplicatedStorage.Packages.Loader)
 
 --[ Object References ]--
 
-local Controllers: Folder = script.Parent:WaitForChild("Controllers")
-local Components: Folder = script.Parent:WaitForChild("Components")
+local Controllers: Folder = script.Parent.Controllers
+local Components: Folder = script.Parent.Components
 
 --[ Boostrapper ]--
 
