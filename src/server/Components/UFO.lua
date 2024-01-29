@@ -216,6 +216,7 @@ function UFO:AttackFriendly(target: Friendly)
 
 	-- Set attacking attribute to true
 	self.Instance:SetAttribute("Attacking", true)
+	self:StopScrolling()
 
 	-- Move UFO to target
 	local targetPosition: Vector3 = target.Position
