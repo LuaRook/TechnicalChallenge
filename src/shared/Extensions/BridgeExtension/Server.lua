@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Comm = require(ReplicatedStorage.Packages.Comm)
 
 local SIGNAL_MARKER = newproxy(true)
@@ -30,7 +29,7 @@ function Server.Starting(component)
 	local outboundMiddleware = component.Middleware and component.Middleware.Outbound
 	local inboundMiddleware = component.Middleware and component.Middleware.Inbound
 
-	component.Client = TableUtil.Copy(component.Client)
+	component.Client = table.clone(component.Client)
 	component._comm = Comm.ServerComm.new(component.Instance, component.Tag)
 	for k, v in pairs(component.Client) do
 		if type(v) == "function" then

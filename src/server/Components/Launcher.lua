@@ -56,7 +56,6 @@ local function NewCasterBehavior(castParams: RaycastParams, cosmeticTemplate: Ba
 	behavior.Acceleration = Vector3.yAxis * -workspace.Gravity
 	behavior.RaycastParams = castParams
 
-
 	-- If this were a larger scale game, I'd use PartCache instead of the two lines below; however,
 	-- this is a singleplayer experience that won't have much bullets being used.
 	behavior.CosmeticBulletTemplate = cosmeticTemplate
@@ -199,6 +198,18 @@ function Launcher:Start()
 	self:_handleRayHit()
 	self:_handleLengthChanged()
 	self:_handleCastTerminating()
+
+	-- Handle launcher damage
+	self._trove:Connect(self.TargetHit, function(target: Model | BasePart)
+		-- Get player humanoid
+		local humanoid: Humanoid? = target and target:FindFirstChildOfClass("Humanoid")
+		if not humanoid then
+			return
+		end
+
+		-- Damage humanoid
+		humanoid:TakeDamage(self.Damage)
+	end)
 
 	-- Use signal instead of client method to save networking resources as client methods return a result.
 	-- BridgeExtension handles ownership-related sanity checks.

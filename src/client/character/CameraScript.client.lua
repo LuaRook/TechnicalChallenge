@@ -47,4 +47,9 @@ RunService:BindToRenderStep("Camera", Enum.RenderPriority.Camera.Value, onUpdate
 
 -- Prevent character rotation
 Humanoid.AutoRotate = false
-RootPart.Orientation = Vector3.zero
+
+-- Although BodyPosition is deprecated, it's much more straight forward than AlignPosition / VectorForce when it comes to prohibiting movement on one axis.
+local bodyPosition: BodyPosition = Instance.new("BodyPosition")
+bodyPosition.Position = Vector3.zAxis * RootPart.Position.Z
+bodyPosition.MaxForce = Vector3.zAxis * 9999
+bodyPosition.Parent = RootPart
