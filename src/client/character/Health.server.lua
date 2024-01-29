@@ -1,0 +1,1 @@
+-- Disable health regeneration to make UFO damage more consequential
