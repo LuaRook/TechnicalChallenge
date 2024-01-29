@@ -72,5 +72,5 @@ function DataController:KnitStart()
 	ReplicaService.RequestData()
 end
 
---[ Return Job ]--
+--[ Return Controller ]--
 return DataController

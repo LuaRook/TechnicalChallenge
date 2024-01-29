@@ -320,5 +320,5 @@ function UFO:Construct()
 	LoadSound("UFOIdle", self.Instance):Play()
 end
 
---[ Return Job ]--
+--[ Return Component ]--
 return UFO

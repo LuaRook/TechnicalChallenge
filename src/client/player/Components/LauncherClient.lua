@@ -108,5 +108,5 @@ function LauncherClient:Start()
 	end)
 end
 
---[ Return Job ]--
+--[ Return Component ]--
 return LauncherClient

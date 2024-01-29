@@ -207,5 +207,5 @@ function Launcher:Start()
 	end)
 end
 
---[ Return Job ]--
+--[ Return Component ]--
 return Launcher
