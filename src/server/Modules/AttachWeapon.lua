@@ -8,6 +8,8 @@ type Weapon = BasePart & {
 --[[
 	Attaches weapon to players hand using a RigidConstraint. Returns boolean to indicate success.
 
+	@param character Model The character to attach the weapon to.
+	@param weapon Weapon The weapon to attach to the specified character.
 	@return boolean Determines if the attachment was successful.
 ]]
 return function(character: Model, weapon: Weapon): boolean
