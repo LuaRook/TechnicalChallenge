@@ -1,5 +1,5 @@
 # Rook Fait Suit Up Challenge
-**Game:** Farm Defense\n
+**Game:** Farm Defense
 
 **Objective:** Defend yourself against a UFO abducting your cows and shooting them at you! Use your chicken gun to shoot eggs at the UFO and bring it down!
 
