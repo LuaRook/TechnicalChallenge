@@ -1,6 +1,7 @@
 # Rook Fait Suit Up Challenge
 **Game:** Farm Defense\n
-**Objective:** Defend yourself against a UFO abducting your cows and shooting them at you! Use your chicken gun to shoot eggs at the UFO and bring it down!\n
+
+**Objective:** Defend yourself against a UFO abducting your cows and shooting them at you! Use your chicken gun to shoot eggs at the UFO and bring it down!
 
 # Challenge Specifics
 **Codebase:** The codebase is thorougly documented & typechecked to ensure clarity for other developers and simplify reviewing. In addition, composure is used in some systems such as the UFO where the launcher is used to launch cows at the player. All programming decisions are also thoroughly commented to explain my technical thought process.
