@@ -19,6 +19,7 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 local Observers = require(ReplicatedStorage.Packages.Observers)
 local RigFriendly = require(script.Parent.Parent.Modules.RigFriendly)
 local AttachWeapon = require(script.Parent.Parent.Modules.AttachWeapon)
+local LauncherComponent = require(script.Parent.Parent.Components.Launcher)
 
 --[ Services ]--
 local DataService
@@ -60,6 +61,7 @@ local LevelConfigs: Folder = script:WaitForChild("Levels")
 --[ Constants ]--
 local SPAWNED_TAG: string = "SpawnedFriendly"
 local ROTATION_AMOUNT: number = 75
+local SCORE_INCREMENT: number = 10
 local MAX_FRIENDLIES: number = 5
 
 --[ Shorthand ]--
@@ -325,6 +327,34 @@ function GameService:KnitStart()
 		local launcherClone: BasePart = launcherTemplate:Clone()
 		launcherClone:SetAttribute("OwnerId", player.UserId)
 		AttachWeapon(character, launcherClone)
+
+		-- Handle score incrementation in
+		local hitConnection: RBXScriptConnection?
+		local promise = LauncherComponent:WaitForInstance(launcherClone):andThen(function(launcherComponent)
+			hitConnection = launcherComponent.TargetHit:Connect(function(target)
+				-- Check if target has humanoid
+				local humanoid: Humanoid? = target and target:FindFirstChildOfClass("Humanoid")
+				if not humanoid then
+					return
+				end
+
+				-- Increment score of player
+				self:IncrementScore(player, SCORE_INCREMENT)
+			end)
+		end)
+
+		return function()
+			-- Disconnect hit connection if it exists
+			if hitConnection then
+				hitConnection:Disconnect()
+				hitConnection = nil
+			end
+
+			-- Cancel promise if character is destroyed early
+			if promise then
+				promise:cancel()
+			end
+		end
 	end)
 end
 
