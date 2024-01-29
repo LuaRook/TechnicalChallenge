@@ -94,12 +94,12 @@ end
 ]]
 function DataService:GetPlayerReplica(player: Player): Profile?
 	-- Wait until profile exists or player isn't apart of game hierarchy.
-	while player.Parent and not self.Replicas[player] do
+	while player.Parent and not PlayerReplicas[player] do
 		task.wait()
 	end
 
 	-- Return possible profile. Could return nil if player leaves game before profile is cached.
-	return self.Replicas[player]
+	return PlayerReplicas[player]
 end
 
 --[[
