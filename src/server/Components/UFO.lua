@@ -10,6 +10,7 @@
 
 --[ Roblox Services ]--
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --[ Dependencies ]--
@@ -43,6 +44,7 @@ type Friendly = BasePart & {
 
 local DEFAULT_ORIGIN: Vector3 = Vector3.new(0, 25, -75)
 local FRIENDLY_TAG: string = "SpawnedFriendly"
+local ATTACK_CHARGE_TIME: number = 5
 local ATTACK_COOLDOWN: number = 30
 
 --[ Variables ]--
@@ -67,6 +69,18 @@ local function GetRandomFriendly(): BasePart?
 	return spawnedFriendlies[math.random(1, #spawnedFriendlies)]
 end
 
+--[[
+	Returns a random player. As this is a singleplayer experience, the returned
+	player will always be the only player ingame. Randomization is only used here
+	to futureproof for multiplayer integration.
+
+	@return player Random player currently ingame.
+]]
+local function GetRandomPlayer(): Player
+	local players: { Player } = Players:GetPlayers()
+	return players[math.random(1, #players)]
+end
+
 function UFO:_setParticlesEnabled(enabled: boolean)
 	for _, particle: ParticleEmitter in self.Instance:GetDescendants() do
 		if particle:IsA("ParticleEmitter") then
@@ -85,6 +99,7 @@ end
 function UFO:CanAttack(): boolean
 	return not self.Instance:GetAttribute("Attacking")
 		and (not self._lastAttack or (os.time() - self._lastAttack) >= ATTACK_COOLDOWN)
+		and self.Launcher ~= nil
 end
 
 --[[
@@ -105,25 +120,41 @@ function UFO:MoveToOrigin()
 end
 
 --[[
-	Makes the UFO attack the specified player with the specified projectile type.
-
-	@param player Player The player the UFO should attack.
-	@param projectileType The type of projectile to shoot at the player.
+	Stops the UFO from targetting and returns UFO to origin.
 ]]
-function UFO:AttackPlayer(player: Player, projectileType: string)
+function UFO:StopTargeting()
+	self.Target = nil
+	self:MoveToOrigin()
+end
+
+--[[
+	Makes the UFO attack the specified target with the specified friendly type.
+
+	@param target Player The player the UFO should attack.
+	@param friendlyType string The type of friendly to shoot at the player.
+]]
+function UFO:AttackPlayer(target: Player, friendlyType: string)
 	-- Move UFO back to origin
 	self:MoveToOrigin()
 
-	-- Make UFO track player
-
-	-- Fire launcher with projectile type
-	if not self.Launcher then
-		self.Instance:SetAttribute("Attacking", false)
+	-- Attempt to get target root
+	local targetCharacter: Model? = target.Character
+	local targetRoot: BasePart? = targetCharacter and targetCharacter.PrimaryPart
+	if not targetRoot then
 		return
 	end
 
-	self.Launcher:ChangeCosmeticTemplate(projectileType)
+	-- Track player for charge time
+	self.Target = targetRoot
+	task.wait(ATTACK_CHARGE_TIME)
+
+	-- Fire launcher with friendly type
+	self.Launcher:ChangeCosmeticTemplate(friendlyType)
+	self.Launcher:Fire(self.Target.Position)
+
+	-- Disable attacking
 	self.Instance:SetAttribute("Attacking", false)
+	self:StopTargeting()
 end
 
 --[[
@@ -132,6 +163,12 @@ end
 	@param target Friendly The friendly to attack/beam up.
 ]]
 function UFO:AttackFriendly(target: Friendly)
+	-- Attempt to get target AlignPosition
+	local targetAligner: AlignPosition? = target:FindFirstChild("AlignPosition", true)
+	if not targetAligner then
+		return
+	end
+
 	-- Set attacking attribute to true
 	self.Instance:SetAttribute("Attacking", true)
 
@@ -139,14 +176,14 @@ function UFO:AttackFriendly(target: Friendly)
 	local targetPosition: Vector3 = target.Position
 	self.AlignPosition.Position = Vector3.new(targetPosition.X, self.Origin.Y, targetPosition.Z)
 
-	-- Handle attack visual effects
-	LoadSound("Laughing", self.Instance):Play()
-	self:_setParticlesEnabled(true)
-
 	-- Beam target up to UFO
 	target.Anchored = false
 	target:SetNetworkOwner(nil)
-	target.Attachment.AlignPosition.Attachment1 = self.CenterAtt
+	targetAligner.Attachment1 = self.CenterAtt
+
+	-- Handle visual effects for attacking target
+	LoadSound("Laughing", self.Instance):Play()
+	self:_setParticlesEnabled(true)
 
 	--Based on name of target, play relevant sound
 	local targetSound: Sound? = LoadSound(target.Name, target)
@@ -158,12 +195,24 @@ function UFO:AttackFriendly(target: Friendly)
 	self.Instance.Touched:Wait()
 	self:_setParticlesEnabled(false)
 
-	-- Attack player and destroy target
-	self:AttackPlayer(nil, target.Name)
+	-- Store target type and destroy target
+	local friendlyType: string = target.Name
 	target:Destroy()
+
+	-- Attack random player with captured friendly
+	local randomPlayer: Player = GetRandomPlayer()
+	self:AttackPlayer(randomPlayer, friendlyType)
 end
 
 function UFO:HeartbeatUpdate()
+	-- Handle target tracking logic
+	local target: BasePart? = self.Target
+	self.AlignOrientation.CFrame = CFrame.Angles(math.rad(if target then -90 else 0), 0, 0)
+	if target then
+		local ufoPosition: Vector3 = self.AlignPosition.Position
+		self.AlignPosition.Position = Vector3.new(target.Position.X, ufoPosition.Y, ufoPosition.Z)
+	end
+
 	-- Check if the UFO can attack or not
 	if not self:CanAttack() then
 		return
@@ -191,9 +240,10 @@ function UFO:Construct()
 	-- Object references
 	self.CenterAtt = self.Instance.CenterAtt
 	self.AlignPosition = self.CenterAtt.AlignPosition
-	-- self.AlignOrientation
+	self.AlignOrientation = self.CenterAtt.AlignOrientation
 
 	-- Setup UFO movement
+	self.Instance.Anchored = false
 	self.Instance:SetNetworkOwner(nil)
 	self:SetOrigin(DEFAULT_ORIGIN)
 
