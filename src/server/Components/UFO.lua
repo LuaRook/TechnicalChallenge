@@ -10,8 +10,9 @@
 
 --[ Roblox Services ]--
 local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
 
 --[ Dependencies ]--
 local Component = require(ReplicatedStorage.Packages.Component)
@@ -42,10 +43,12 @@ type Friendly = BasePart & {
 
 --[ Constants ]--
 
-local DEFAULT_ORIGIN: Vector3 = Vector3.new(0, 25, -75)
+local SCROLL_TWEEN_INFO: TweenInfo = TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
+local DEFAULT_ORIGIN: Vector3 = Vector3.new(25, 25, -75)
 local FRIENDLY_TAG: string = "SpawnedFriendly"
 local ATTACK_CHARGE_TIME: number = 5
 local ATTACK_COOLDOWN: number = 30
+local UFO_DAMAGE: number = 25
 
 --[ Variables ]--
 
@@ -89,6 +92,22 @@ function UFO:_setParticlesEnabled(enabled: boolean)
 	end
 end
 
+function UFO:_createScrollTween(): Tween
+	-- Assuming that Origin.X is not zero, create vector that will move UFO to other side of map.
+	local scrollOffset: Vector3 = Vector3.new(-self.Origin.X, self.Origin.Y, self.Origin.Z)
+
+	-- Return repeating tween
+	return self._trove:Add(TweenService:Create(self.AlignPosition, SCROLL_TWEEN_INFO, {
+		Position = scrollOffset,
+	}))
+end
+
+function UFO:_awaitGoalReached(goal: Vector3): nil
+	while (self.AlignPosition.Position - goal).Magnitude > 1 do
+		task.wait()
+	end
+end
+
 --[ Public Functions ]--
 
 --[[
@@ -103,13 +122,39 @@ function UFO:CanAttack(): boolean
 end
 
 --[[
+	Moves the UFO back to its origin and starts scrolling.
+]]
+function UFO:StartScrolling()
+	self:MoveToOrigin()
+	self._scrollTween:Play()
+end
+
+--[[
+	Stops the UFO from scrolling.
+]]
+function UFO:StopScrolling()
+	self._scrollTween:Cancel()
+	self:MoveToOrigin()
+end
+
+--[[
 	Updates origin of the UFO.
 
 	@param origin Vector3 The origin of the UFO.
 ]]
 function UFO:SetOrigin(origin: Vector3)
+	-- Update origin variable and current position
 	self.Origin = origin
 	self.AlignPosition.Position = origin
+
+	-- Remove previous scrolling tween
+	if self._scrollTween then
+		self._trove:Remove(self._scrollTween)
+	end
+
+	-- Create new scrolling tween and start
+	self._scrollTween = self:_createScrollTween()
+	self._scrollTween:Play()
 end
 
 --[[
@@ -120,11 +165,11 @@ function UFO:MoveToOrigin()
 end
 
 --[[
-	Stops the UFO from targetting and returns UFO to origin.
+	Stops the UFO from targetting and resumes UFO scrolling.
 ]]
 function UFO:StopTargeting()
 	self.Target = nil
-	self:MoveToOrigin()
+	self:StartScrolling()
 end
 
 --[[
@@ -141,7 +186,7 @@ function UFO:AttackPlayer(target: Player, friendlyType: string)
 	local targetCharacter: Model? = target.Character
 	local targetRoot: BasePart? = targetCharacter and targetCharacter.PrimaryPart
 	if not targetRoot then
-		return
+		return self:StartScrolling()
 	end
 
 	-- Track player for charge time
@@ -174,7 +219,11 @@ function UFO:AttackFriendly(target: Friendly)
 
 	-- Move UFO to target
 	local targetPosition: Vector3 = target.Position
-	self.AlignPosition.Position = Vector3.new(targetPosition.X, self.Origin.Y, targetPosition.Z)
+	local goalPosition: Vector3 = Vector3.new(targetPosition.X, self.Origin.Y, targetPosition.Z)
+	self.AlignPosition.Position = goalPosition
+
+	-- Wait for UFO to reach goal position
+	self:_awaitGoalReached(goalPosition)
 
 	-- Beam target up to UFO
 	target.Anchored = false
@@ -230,9 +279,29 @@ end
 
 --[ Initializers ]--
 function UFO:Start()
+	-- Set inital UFO origin
+	if not self.Origin then
+		self:SetOrigin(DEFAULT_ORIGIN)
+	end
+
+	-- Starts UFO scrolling
+	self:StartScrolling()
+
 	-- Incorporate composition through using launcher for attacks
 	self._trove:AddPromise(LauncherComponent:WaitForInstance(self.Instance):andThen(function(launcherComponent)
 		self.Launcher = launcherComponent
+
+		-- Handle launcher hits
+		self._trove:Connect(self.Launcher.TargetHit, function(hitModel: Model)
+			-- Attempt to get hit humanoid
+			local humanoid: Humanoid? = hitModel and hitModel:FindFirstChildOfClass("Humanoid")
+			if not humanoid then
+				return
+			end
+
+			-- Damage humanoid
+			humanoid:TakeDamage(UFO_DAMAGE)
+		end)
 	end))
 end
 
@@ -245,7 +314,6 @@ function UFO:Construct()
 	-- Setup UFO movement
 	self.Instance.Anchored = false
 	self.Instance:SetNetworkOwner(nil)
-	self:SetOrigin(DEFAULT_ORIGIN)
 
 	-- Play UFO idle sound
 	LoadSound("UFOIdle", self.Instance):Play()
