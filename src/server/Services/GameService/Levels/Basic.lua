@@ -11,6 +11,7 @@
 
 --[ Export ]--
 return {
+	Friendlies = { "Cow" },
 	Enemies = {
 		{
 			Type = "UFO",
