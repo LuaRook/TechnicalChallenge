@@ -14,7 +14,12 @@ local CollectionService = game:GetService("CollectionService")
 
 --[ Dependencies ]--
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local Observers = require(ReplicatedStorage.Packages.Observers)
 local RigFriendly = require(script.Parent.Parent.Modules.RigFriendly)
+local AttachWeapon = require(script.Parent.Parent.Modules.AttachWeapon)
+
+--[ Services ]--
+local DataService
 
 --[ Root ]--
 local GameService = Knit.CreateService({
@@ -35,8 +40,10 @@ type LevelData = {
 --[ Object References ]--
 local Assets: Folder = ReplicatedStorage.Assets
 local EnemyAssets: Folder = Assets.Enemies
-local EnemyFolder: Folder = workspace.Enemies
 local FriendlyAssets: Folder = Assets.Friendlies
+local LauncherAssets: Folder = Assets.Launchers
+
+local EnemyFolder: Folder = workspace.Enemies
 local FriendlyFolder: Folder = workspace.Friendlies
 local LevelConfigs: Folder = script:WaitForChild("Levels")
 
@@ -44,6 +51,9 @@ local LevelConfigs: Folder = script:WaitForChild("Levels")
 local SPAWNED_TAG: string = "SpawnedFriendly"
 local ROTATION_AMOUNT: number = 75
 local MAX_FRIENDLIES: number = 5
+
+--[ Shorthand ]--
+local observeCharacter = Observers.observeCharacter
 
 --[ Local Functions ]--
 
@@ -190,7 +200,26 @@ end
 
 --[ Initializers ]--
 function GameService:KnitStart()
+	-- Get DataService within KnitStart to prevent race condition
+	DataService = Knit.GetService("DataService")
+
 	self:StartGame("Basic")
+
+	-- Give players launchers
+	observeCharacter(function(player: Player, character: Model)
+		local playerData = DataService:GetPlayerData(player)
+
+		-- Attempt to get player launcher type
+		local launcherTemplate: BasePart? = LauncherAssets:FindFirstChild(playerData.Launcher)
+		if not launcherTemplate then
+			return
+		end
+
+		-- Attach launcher to player
+		local launcherClone: BasePart = launcherTemplate:Clone()
+		launcherClone:SetAttribute("OwnerId", player.UserId)
+		AttachWeapon(character, launcherClone)
+	end)
 end
 
 --[ Return Service ]--
