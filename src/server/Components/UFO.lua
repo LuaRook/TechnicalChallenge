@@ -47,6 +47,7 @@ local SCROLL_TWEEN_INFO: TweenInfo = TweenInfo.new(5, Enum.EasingStyle.Linear, E
 local DEFAULT_ORIGIN: Vector3 = Vector3.new(25, 25, -75)
 local FRIENDLY_TAG: string = "SpawnedFriendly"
 local ATTACK_CHARGE_TIME: number = 5
+local ATTACK_CHANCE_MAX: number = 5
 local ATTACK_COOLDOWN: number = 30
 local UFO_DAMAGE: number = 25
 
@@ -108,6 +109,21 @@ function UFO:_awaitGoalReached(goal: Vector3): nil
 	end
 end
 
+--[[
+	Checks if any other UFO is attacking.
+
+	@return boolean Boolean determining if any other UFOs are attacking.
+]]
+function UFO:_areOthersAttacking(): boolean
+	for _, ufo in UFO:GetAll() do
+		if ufo.Instance:GetAttribute("Attacking") then
+			return true
+		end
+	end
+
+	return false
+end
+
 --[ Public Functions ]--
 
 --[[
@@ -119,6 +135,7 @@ function UFO:CanAttack(): boolean
 	return not self.Instance:GetAttribute("Attacking")
 		and (not self._lastAttack or (os.time() - self._lastAttack) >= ATTACK_COOLDOWN)
 		and self.Launcher ~= nil
+		and not self:_areOthersAttacking()
 end
 
 --[[
@@ -268,6 +285,11 @@ function UFO:HeartbeatUpdate()
 		return
 	end
 
+	-- Add randomization to friendly attacks
+	if math.random(1, ATTACK_CHANCE_MAX) ~= math.random(1, ATTACK_CHANCE_MAX) then
+		return
+	end
+
 	-- Store last attack time
 	self._lastAttack = os.time()
 
@@ -282,7 +304,7 @@ end
 function UFO:Start()
 	-- Set inital UFO origin
 	if not self.Origin then
-		self:SetOrigin(DEFAULT_ORIGIN)
+		self:SetOrigin(self.Instance:GetAttribute("Origin") or DEFAULT_ORIGIN)
 	end
 
 	-- Starts UFO scrolling
