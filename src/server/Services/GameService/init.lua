@@ -11,9 +11,11 @@
 --[ Roblox Services ]--
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 
 --[ Dependencies ]--
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local Trove = require(ReplicatedStorage.Packages.Trove)
 local Observers = require(ReplicatedStorage.Packages.Observers)
 local RigFriendly = require(script.Parent.Parent.Modules.RigFriendly)
 local AttachWeapon = require(script.Parent.Parent.Modules.AttachWeapon)
@@ -25,6 +27,9 @@ local DataService
 local GameService = Knit.CreateService({
 	Name = "GameService",
 	Client = {},
+
+	-- Create trove for cleaning up connections after game ends
+	_gameTrove = Trove.new(),
 })
 
 --[ Exports & Types & Defaults ]--
@@ -35,6 +40,11 @@ type EnemyData = {
 type LevelData = {
 	Enemies: { EnemyData },
 	Friendlies: { string },
+}
+
+type EnemyParams = {
+	Origin: Vector3?,
+	Health: number?,
 }
 
 --[ Object References ]--
@@ -56,6 +66,23 @@ local MAX_FRIENDLIES: number = 5
 local observeCharacter = Observers.observeCharacter
 
 --[ Local Functions ]--
+
+local function SaveHighScore(player: Player)
+	-- Check if player data exists
+	local playerData = DataService:GetPlayerData(player)
+	if not playerData then
+		return
+	end
+
+	-- Save current score if score is higher than saved high score
+	local currentScore: number = GameService:GetScore(player)
+	if playerData.HighScore < currentScore then
+		playerData.HighScore = currentScore
+	end
+
+	-- Remove score attribute from player
+	player:SetAttribute("Score", nil)
+end
 
 --[[
 	Returns boolean determining if the friendly spawn limit has been reached.
@@ -98,20 +125,69 @@ end
 --[ Public Functions ]--
 
 --[[
+	Gets the score for the specified player.
+
+	@param player Player The player to get the score from.
+]]
+function GameService:GetScore(player: Player)
+	return player:GetAttribute("Score")
+end
+
+--[[
+	Increments score for the specified player.
+
+	@param player Player The player to increase score for.
+	@param incrementBy number The amount to increment the players score by.
+]]
+function GameService:IncrementScore(player: Player, incrementBy: number)
+	local existingScore: number = self:GetScore(player) or 0
+	return player:SetAttribute("Score", existingScore + incrementBy)
+end
+
+--[[
 	Spawns enemy of the specified type at the specified origin.
 
 	@param enemyType string The type of enemy to spawn.
-	@param origin Vector3 The origin of the spawned enemy.
+	@param enemyParams EnemyParams Parameters for the spawned entity.
 ]]
-function GameService:SpawnEnemy(enemyType: string, origin: Vector3?)
+function GameService:SpawnEnemy(enemyType: string, enemyParams: EnemyParams): BasePart
 	local enemyTemplate: BasePart? = EnemyAssets:FindFirstChild(enemyType)
 	if not enemyTemplate then
 		return
 	end
 
 	local clonedEnemy: BasePart = enemyTemplate:Clone()
-	clonedEnemy:SetAttribute("Origin", origin)
+	if enemyParams.Origin then
+		clonedEnemy:SetAttribute("Origin", enemyParams.Origin)
+	end
+
+	-- Handle enemy humanoiod
+	local enemyHumanoid: Humanoid? = clonedEnemy:FindFirstChildOfClass("Humanoid")
+	if enemyHumanoid then
+		-- Update humanoid health
+		local maxHealth: number = enemyParams.Health or enemyHumanoid.MaxHealth
+		enemyHumanoid.MaxHealth = maxHealth
+		enemyHumanoid.Health = maxHealth
+
+		-- Destroy enemy humanoid on death and create new enemy
+		-- Use HealthChanged as .Died doesn't fire for parts with humanoids
+		self._gameTrove:Connect(enemyHumanoid.HealthChanged, function()
+			-- Check if humanoid is still alive
+			if enemyHumanoid.Health > 0 then
+				return
+			end
+
+			-- Destroy enemy and spawn new & stronger enemy
+			clonedEnemy:Destroy()
+			self:SpawnEnemy(enemyType, {
+				Origin = enemyParams.Origin,
+				Health = maxHealth * 2, -- Multiply previous health by two to make next enemy tougher
+			})
+		end)
+	end
+
 	clonedEnemy.Parent = EnemyFolder
+	return clonedEnemy
 end
 
 --[[
@@ -180,22 +256,52 @@ function GameService:StartGame(levelName: string)
 
 	-- Spawn enemies
 	for _, enemy: EnemyData in levelData.Enemies do
-		self:SpawnEnemy(enemy.Type, enemy.Origin)
+		self:SpawnEnemy(enemy.Type, {
+			Origin = enemy.Origin,
+		})
 	end
 
 	self.GameActive = true
 	self.CurrentLevel = levelData
+
+	-- Add cleanup task to cleanup variables and map
+	self._gameTrove:Add(function()
+		-- Reset game variables
+		self.GameActive = false
+		self.CurrentLevel = nil
+
+		-- Clear map
+		EnemyFolder:ClearAllChildren()
+		FriendlyFolder:ClearAllChildren()
+	end)
 end
 
 --[[
-	Ends game by removing both enemies and spawned friendlies.
+	Handles logic for ending game.
 ]]
 function GameService:EndGame()
-	self.GameActive = false
-	self.CurrentLevel = nil
+	-- Clean game trove
+	self._gameTrove:Clean()
 
-	EnemyFolder:ClearAllChildren()
-	FriendlyFolder:ClearAllChildren()
+	-- Save high scores for players
+	for _, player: Player in Players:GetPlayers() do
+		task.spawn(SaveHighScore, player)
+	end
+end
+
+--[[
+	Provides easy-to-use API for any external services/handlers to add tasks to the game trove.
+
+	@param task any The task to add to the game trove.
+	@return any
+]]
+function GameService:AddCleanupTask(task: any): any
+	-- Check if game is active
+	if not self:IsGameActive() then
+		return warn("Cannot add cleanup task when game is inactive!")
+	end
+
+	return self._gameTrove:Add(task)
 end
 
 --[ Initializers ]--

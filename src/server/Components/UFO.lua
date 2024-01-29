@@ -48,8 +48,7 @@ local DEFAULT_ORIGIN: Vector3 = Vector3.new(25, 25, -75)
 local FRIENDLY_TAG: string = "SpawnedFriendly"
 local ATTACK_CHARGE_TIME: number = 5
 local ATTACK_CHANCE_MAX: number = 5
-local ATTACK_COOLDOWN: number = 30
-local UFO_DAMAGE: number = 25
+local ATTACK_COOLDOWN: number = 15
 
 --[ Variables ]--
 
@@ -285,11 +284,6 @@ function UFO:HeartbeatUpdate()
 		return
 	end
 
-	-- Add randomization to friendly attacks
-	if math.random(1, ATTACK_CHANCE_MAX) ~= math.random(1, ATTACK_CHANCE_MAX) then
-		return
-	end
-
 	-- Store last attack time
 	self._lastAttack = os.time()
 
@@ -313,18 +307,6 @@ function UFO:Start()
 	-- Incorporate composition through using launcher for attacks
 	self._trove:AddPromise(LauncherComponent:WaitForInstance(self.Instance):andThen(function(launcherComponent)
 		self.Launcher = launcherComponent
-
-		-- Handle launcher hits
-		self._trove:Connect(self.Launcher.TargetHit, function(hitModel: Model)
-			-- Attempt to get hit humanoid
-			local humanoid: Humanoid? = hitModel and hitModel:FindFirstChildOfClass("Humanoid")
-			if not humanoid then
-				return
-			end
-
-			-- Damage humanoid
-			humanoid:TakeDamage(UFO_DAMAGE)
-		end)
 	end))
 end
 
@@ -337,6 +319,9 @@ function UFO:Construct()
 	-- Setup UFO movement
 	self.Instance.Anchored = false
 	self.Instance:SetNetworkOwner(nil)
+
+	-- Define last attack as construction time to prevent immediate attacks
+	self._lastAttack = os.time()
 
 	-- Play UFO idle sound
 	LoadSound("UFOIdle", self.Instance):Play()
