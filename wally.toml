@@ -19,3 +19,4 @@ ReplicaService = "brittonfischer/replicaservice@0.1.0" # ReplicaService is used 
 Signal = "sleitnick/signal@2.0.1" # Signal is used to provide events (such as Launcher.TargetHit) for the developer to connect to.
 Timer = "sleitnick/timer@1.1.2" # Used to run behavior on intervals, such as the Spawn Pads.
 Trove = "sleitnick/trove@1.1.0" # Used for cleanup.
+React = "core-packages/react@0.0.1" # Used for creating reactive and component-based UI (such as the health bar, menu, and score UI)
