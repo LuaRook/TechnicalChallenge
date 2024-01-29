@@ -79,9 +79,7 @@ function Launcher:_handleRayHit()
 
 		-- Fire hit signal to allow scripts to determine how they handle hits
 		local hitModel: Model? = result.Instance:FindFirstAncestorOfClass("Model")
-		if hitModel then
-			self.TargetHit:Fire(hitModel)
-		end
+		self.TargetHit:Fire(hitModel or result.Instance)
 	end)
 end
 
