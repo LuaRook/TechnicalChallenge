@@ -53,12 +53,7 @@ return function()
 
 	-- Return app
 	return React.createElement(React.Fragment, nil, {
-		-- Render menu if HUD is disabled
-		Menu = not showHUD and React.createElement(Menu, {
-			SetHUDVisible = setShowHUD,
-		}),
-
-		-- Render HUD if enabled
-		HUD = showHUD and React.createElement(HUD),
+		Menu = not showHUD and React.createElement(Menu), -- Render menu if HUD is disabled
+		HUD = showHUD and React.createElement(HUD), -- Render HUD if enabled
 	})
 end
