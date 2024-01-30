@@ -25,7 +25,7 @@
         "CameraMinZoomDistance": 4,
         "DevComputerMovementMode": "KeyboardMouse",
         "CharacterWalkSpeed": 12,
-        "DevComputerCameraMovementMode": "KeyboardMouse",
+        "DevComputerCameraMovementMode": "Follow",
         "DevTouchMovementMode": "DPad",
         "LoadCharacterAppearance": false,
         "LoadCharacterLayeredClothing": "Disabled"
