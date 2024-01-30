@@ -184,9 +184,9 @@ function UFO:AttackPlayer(target: Player, friendlyType: string)
 	-- Move UFO back to origin
 	self:MoveToOrigin()
 
-	-- Attempt to get target root
+	-- Attempt to get target torso
 	local targetCharacter: Model? = target.Character
-	local targetRoot: BasePart? = targetCharacter and targetCharacter.PrimaryPart
+	local targetRoot: BasePart? = targetCharacter and targetCharacter:FindFirstChild("UpperTorso") -- FastCast doesn't register the hit when we cast at the roots position, but it works with the upper torso.
 	if not targetRoot then
 		return self:StartScrolling()
 	end
@@ -197,7 +197,7 @@ function UFO:AttackPlayer(target: Player, friendlyType: string)
 
 	-- Fire launcher with friendly type
 	self.Launcher:ChangeCosmeticTemplate(friendlyType)
-	self.Launcher:Fire(self.Target.Position)
+	self.Launcher:Fire(self.Target.Position + Vector3.yAxis)
 
 	-- Disable attacking
 	self.Instance:SetAttribute("Attacking", false)
