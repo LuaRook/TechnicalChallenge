@@ -24,18 +24,20 @@ local Score = require(script.Score)
 --[ Services & Controllers ]--
 local DataController = Knit.GetController("DataController")
 
+--[ Exports & Types & Defaults ]--
+type SetScoreFn = (newScore: number) -> ()
+
 --[ Object References ]--
 local LocalPlayer: Player = Players.LocalPlayer
 
 --[ Shorthand ]
-
 local observeAttribute = Observers.observeAttribute
 
 --[ Return Component ]--
 return function()
 	-- Create states for HUD
-	local score, setScore = React.useState(0)
-	local highScore, setHighScore = React.useState(0)
+	local score: number, setScore: SetScoreFn = React.useState(0)
+	local highScore: number, setHighScore: SetScoreFn = React.useState(0)
 
 	-- Update values
 	React.useEffect(function()
