@@ -17,6 +17,9 @@ local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 
 --[ Exports & Types & Defaults ]--
 export type ContainerProps = {
+	BackgroundTransparency: number?,
+	BorderSizePixel: number?,
+
 	AnchorPoint: Vector2?,
 	Position: UDim2?,
 	Size: UDim2?,
@@ -25,6 +28,7 @@ export type ContainerProps = {
 --[ Constants ]--
 local DEFAULT_PROPS: ContainerProps = {
 	BackgroundTransparency = 1,
+	BorderSizePixel = 0,
 
 	AnchorPoint = Vector2.one * 0.5,
 	Size = UDim2.fromScale(1, 1),
