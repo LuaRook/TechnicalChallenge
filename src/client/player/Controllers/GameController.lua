@@ -35,6 +35,11 @@ local GameService
 local LocalPlayer: Player = Players.LocalPlayer
 local Camera: Camera = workspace.CurrentCamera
 
+-- Attachment for correcting player orientation
+local CorrectOrientationAttachment: Attachment = Instance.new("Attachment")
+CorrectOrientationAttachment.Name = "CorrectOrientation"
+CorrectOrientationAttachment.Parent = workspace.Terrain
+
 local Character: Model
 local Humanoid: Humanoid
 local RootPart: BasePart
@@ -53,11 +58,23 @@ local MENU_CAMERA_OFFSET: CFrame = CFrame.new(0, 0.5, 5)
 	lthough BodyPosition is deprecated, it's much more straight forward than
 	AlignPosition / VectorForce when it comes to implementing this behavior.
 ]]
-local function CreateAxisLimiter(): BodyPosition
+local function CreateAxisLimiter()
 	local bodyPosition: BodyPosition = Instance.new("BodyPosition")
 	bodyPosition.Position = Vector3.zAxis * RootPart.Position.Z
 	bodyPosition.MaxForce = Vector3.zAxis * 999999
-	return bodyPosition
+	bodyPosition.Parent = RootPart
+end
+
+--[[
+	Creates AlignOrientation to fix a players orientation incase they
+	become misalligned.
+]]
+local function CreateOrientationFixer()
+	local alignOrientation: AlignOrientation = Instance.new("AlignOrientation")
+	alignOrientation.Attachment0 = RootPart:WaitForChild("RootAttachment")
+	alignOrientation.Attachment1 = CorrectOrientationAttachment
+	alignOrientation.Responsiveness = 50
+	alignOrientation.Parent = RootPart
 end
 
 --[[
@@ -80,8 +97,8 @@ local function CharacterAdded(character: Model)
 	Humanoid.AutoRotate = false
 
 	-- Although BodyPosition is deprecated, it's much more straight forward than AlignPosition / VectorForce when it comes to prohibiting movement on one axis.
-	local bodyPosition: BodyPosition = CreateAxisLimiter()
-	bodyPosition.Parent = RootPart
+	CreateAxisLimiter()
+	CreateOrientationFixer()
 
 	-- Create local healthbar
 	MountHealthbar(RootPart, Humanoid)
