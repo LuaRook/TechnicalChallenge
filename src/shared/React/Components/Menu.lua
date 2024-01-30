@@ -14,6 +14,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --[ Dependencies ]--
 local React = require(ReplicatedStorage.Packages.React)
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local LoadSound = require(ReplicatedStorage.Shared.Modules.LoadSound)
 
 --[ React Components ]--
 local Container = require(script.Parent.Essential.Container)
@@ -44,9 +45,18 @@ return function()
 			Position = UDim2.fromScale(0.5, 0.55),
 			Size = UDim2.fromScale(0.25, 0.1),
 
+			-- Start game on click
 			[React.Event.Activated] = function()
 				-- Start game
 				GameController:StartGame("Basic")
+
+				-- Play sound to give feedback to user
+				LoadSound("Click"):Play()
+			end,
+
+			-- Play hovering sound
+			[React.Event.MouseEnter] = function()
+				LoadSound("Hover"):Play()
 			end,
 		}),
 	})

@@ -17,6 +17,7 @@ local Players = game:GetService("Players")
 
 --[ Dependencies ]--
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local MountHealthbar = require(ReplicatedStorage.Shared.Modules.MountHealthbar)
 
 --[ Root ]--
 local GameController = Knit.CreateController({
@@ -80,6 +81,9 @@ local function CharacterAdded(character: Model)
 	-- Although BodyPosition is deprecated, it's much more straight forward than AlignPosition / VectorForce when it comes to prohibiting movement on one axis.
 	local bodyPosition: BodyPosition = CreateAxisLimiter()
 	bodyPosition.Parent = RootPart
+
+	-- Create local healthbar
+	MountHealthbar(RootPart, Humanoid)
 end
 
 --[[

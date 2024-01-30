@@ -6,12 +6,19 @@
 
 	Description:
 		Handles gameplay logic such as level selection and spawning.
+		This service is a bit lengthy and I'd likely fragment it up
+		to make it easier for other developers to use.
+
+		In addition, this service was made with singleplayer in mind;
+		however, the service is somewhat futureproofed for multi-player
+		conversion.
 --]]
 
 --[ Roblox Services ]--
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local SoundService = game:GetService("SoundService")
 
 --[ Dependencies ]--
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -20,6 +27,8 @@ local Observers = require(ReplicatedStorage.Packages.Observers)
 local RigFriendly = require(script.Parent.Parent.Modules.RigFriendly)
 local AttachWeapon = require(script.Parent.Parent.Modules.AttachWeapon)
 local LauncherComponent = require(script.Parent.Parent.Components.Launcher)
+local LoadSound = require(ReplicatedStorage.Shared.Modules.LoadSound)
+local MountHealthbar = require(ReplicatedStorage.Shared.Modules.MountHealthbar)
 
 --[ Services ]--
 local DataService
@@ -189,6 +198,18 @@ function GameService:SpawnEnemy(enemyType: string, enemyParams: EnemyParams): Ba
 				Health = maxHealth * 2, -- Multiply previous health by two to make next enemy tougher
 			})
 		end)
+
+		-- Play sound for new enemy
+		local newEnemySound: Sound? = LoadSound("NewEnemy")
+		if newEnemySound and not newEnemySound.IsPlaying then
+			newEnemySound:Play()
+		end
+
+		-- Mount healthbar for enemy
+		local topAttachment: Attachment? = clonedEnemy:FindFirstChild("Top")
+		MountHealthbar(topAttachment or clonedEnemy, enemyHumanoid, {
+			Size = UDim2.fromScale(clonedEnemy.Size.X, 2.5), -- Scale healthbar on X-axis to model size
+		})
 	end
 
 	clonedEnemy.Parent = EnemyFolder
@@ -278,6 +299,9 @@ function GameService:StartGame(levelName: string)
 		-- Clear map
 		EnemyFolder:ClearAllChildren()
 		FriendlyFolder:ClearAllChildren()
+
+		-- Play game over sound
+		LoadSound("GameOver"):Play()
 	end)
 end
 
