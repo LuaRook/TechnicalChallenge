@@ -2,7 +2,6 @@
   "name": "TechnicalChallenge",
   "tree": {
     "$className": "DataModel",
-
     "ReplicatedStorage": {
       "Packages": {
         "$path": "Packages"
@@ -11,7 +10,6 @@
         "$path": "src/shared"
       }
     },
-
     "ServerScriptService": {
       "ServerPackages": {
         "$path": "ServerPackages"
@@ -20,7 +18,6 @@
         "$path": "src/server"
       }
     },
-
     "StarterPlayer": {
       "$properties": {
         "AutoJumpEnabled": false,
@@ -33,7 +30,6 @@
         "LoadCharacterAppearance": false,
         "LoadCharacterLayeredClothing": "Disabled"
       },
-
       "StarterCharacterScripts": {
         "$path": "src/client/character"
       },
@@ -41,6 +37,11 @@
         "Client": {
           "$path": "src/client/player"
         }
+      }
+    },
+    "Players": {
+      "$properties": {
+        "RespawnTime": 0
       }
     },
     "SoundService": {
