@@ -43,7 +43,8 @@ local WaistOverride: CFrame
 
 --[ Constants ]--
 local BASE_SPEED: number = StarterPlayer.CharacterWalkSpeed
-local CAMERA_OFFSET: CFrame = Vector3.xAxis * 2
+local GUN_CAMERA_OFFSET: Vector3 = Vector3.xAxis * 2
+local MENU_CAMERA_OFFSET: CFrame = CFrame.new(0, 0.5, 5)
 
 --[ Local Functions ]--
 
@@ -100,11 +101,11 @@ local function CameraStepped()
 
 	-- Update camera
 	Camera.CameraType = if isPlaying then Enum.CameraType.Attach else Enum.CameraType.Scriptable
-	Humanoid.CameraOffset = if isPlaying then CAMERA_OFFSET else Vector3.zero
+	Humanoid.CameraOffset = if isPlaying then GUN_CAMERA_OFFSET else Vector3.zero
 
 	-- Fix camera orientation not resetting on menu
 	if not isPlaying then
-		Camera.CFrame = CFrame.new(Camera.CFrame.Position)
+		Camera.CFrame = CFrame.new(RootPart.Position) * MENU_CAMERA_OFFSET
 	end
 
 	-- Update body if waist exists
