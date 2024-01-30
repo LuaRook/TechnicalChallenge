@@ -70,13 +70,13 @@ end
 	@param callback function The callback to be called whenever the value changes.
 ]]
 function DataController:OnValueChanged(key: string, callback: (newValue: any, oldValue: any) -> ())
-	-- Setup replica listener
-	self:GetReplica():ListenToChange(key, callback)
-
 	-- Defer callback with initial value. Nests callback within task.defer to prevent desync.
 	task.defer(function()
 		callback(self:GetValue(key))
 	end)
+
+	-- Setup replica listener
+	return self:GetReplica():ListenToChange(key, callback)
 end
 
 --[ Initializers ]--
