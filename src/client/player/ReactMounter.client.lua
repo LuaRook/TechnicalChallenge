@@ -17,6 +17,7 @@ end
 --[ Roblox Services ]--
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 
 --[ Dependencies ]--
@@ -38,6 +39,10 @@ RootUI.Parent = PlayerGui
 
 --[ Mounter ]--
 
+-- Disable core UI
+StarterGui:SetCore(Enum.CoreGuiType.All, false)
+
+-- Mount React UI
 local Root = ReactRoblox.createRoot(RootUI)
 Root:render(React.createElement("Frame", {
 	Size = UDim2.fromScale(1, 1),
