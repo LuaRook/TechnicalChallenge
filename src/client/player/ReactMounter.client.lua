@@ -21,9 +21,10 @@ local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 
 --[ Dependencies ]--
-
-local React = require(ReplicatedStorage.Packages.React)
 local ReactRoblox = require(ReplicatedStorage.Packages.ReactRoblox)
+local React = require(ReplicatedStorage.Packages.React)
+local Knit = require(ReplicatedStorage.Packages.Knit)
+local App = require(ReplicatedStorage.Shared.React.Components.App)
 
 --[ Object References ]--
 
@@ -40,11 +41,10 @@ RootUI.Parent = PlayerGui
 --[ Mounter ]--
 
 -- Disable core UI
-StarterGui:SetCore(Enum.CoreGuiType.All, false)
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
 
--- Mount React UI
-local Root = ReactRoblox.createRoot(RootUI)
-Root:render(React.createElement("Frame", {
-	Size = UDim2.fromScale(1, 1),
-	BackgroundTransparency = 1,
-}))
+-- Mount React UI once Knit has started
+Knit.OnStart():andThen(function()
+	local Root = ReactRoblox.createRoot(RootUI)
+	Root:render(React.createElement(App))
+end)
