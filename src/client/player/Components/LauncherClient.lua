@@ -99,7 +99,7 @@ function LauncherClient:Start()
 		-- Determine mouse position and relay to server
 		local mousePosition: Vector3 = GetMousePosition(self.Character)
 		self.Server.Fire:Fire(mousePosition)
-	end, false, Enum.UserInputType.MouseButton1, Enum.KeyCode.ButtonR2)
+	end, false, Enum.UserInputType.MouseButton1, Enum.UserInputType.Touch, Enum.KeyCode.ButtonR2)
 
 	-- Stop animation and unbind action upon trove being cleaned / component stopping.
 	self._trove:Add(function()

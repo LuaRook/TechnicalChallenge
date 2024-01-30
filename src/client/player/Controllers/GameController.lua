@@ -56,7 +56,7 @@ local MENU_CAMERA_OFFSET: CFrame = CFrame.new(0, 0.5, 5)
 local function CreateAxisLimiter(): BodyPosition
 	local bodyPosition: BodyPosition = Instance.new("BodyPosition")
 	bodyPosition.Position = Vector3.zAxis * RootPart.Position.Z
-	bodyPosition.MaxForce = Vector3.zAxis * 9999
+	bodyPosition.MaxForce = Vector3.zAxis * 999999
 	return bodyPosition
 end
 
