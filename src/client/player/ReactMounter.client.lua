@@ -24,7 +24,9 @@ local Players = game:GetService("Players")
 local ReactRoblox = require(ReplicatedStorage.Packages.ReactRoblox)
 local React = require(ReplicatedStorage.Packages.React)
 local Knit = require(ReplicatedStorage.Packages.Knit)
-local App = require(ReplicatedStorage.Shared.React.Components.App)
+
+--[ React Components ]--
+local App
 
 --[ Object References ]--
 
@@ -32,11 +34,11 @@ local LocalPlayer: Player = Players.LocalPlayer
 local PlayerGui: PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Create root UI
-local RootUI: ScreenGui = Instance.new("ScreenGui")
-RootUI.Name = "Game"
-RootUI.ResetOnSpawn = false
-RootUI.IgnoreGuiInset = true
-RootUI.Parent = PlayerGui
+local AppUI: ScreenGui = Instance.new("ScreenGui")
+AppUI.Name = "Game"
+AppUI.ResetOnSpawn = false
+AppUI.IgnoreGuiInset = true
+AppUI.Parent = PlayerGui
 
 --[ Mounter ]--
 
@@ -45,6 +47,10 @@ StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
 
 -- Mount React UI once Knit has started
 Knit.OnStart():andThen(function()
-	local Root = ReactRoblox.createRoot(RootUI)
+	-- Require React app once Knit starts
+	App = require(ReplicatedStorage.Shared.React.Components.App)
+
+	-- Render React app
+	local Root = ReactRoblox.createRoot(AppUI)
 	Root:render(React.createElement(App))
 end)
