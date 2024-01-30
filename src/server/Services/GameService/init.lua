@@ -74,15 +74,15 @@ local observeCharacter = Observers.observeCharacter
 
 local function SaveHighScore(player: Player)
 	-- Check if player data exists
-	local playerData = DataService:GetPlayerData(player)
-	if not playerData then
+	local playerReplica = DataService:GetPlayerReplica(player)
+	if not playerReplica then
 		return
 	end
 
 	-- Save current score if score is higher than saved high score
 	local currentScore: number = GameService:GetScore(player)
-	if playerData.HighScore < currentScore then
-		playerData.HighScore = currentScore
+	if playerReplica.Data.HighScore < currentScore then
+		playerReplica:SetValue("HighScore", currentScore)
 	end
 
 	-- Remove score attribute from player
