@@ -18,6 +18,7 @@ local Players = game:GetService("Players")
 local Component = require(ReplicatedStorage.Packages.Component)
 local LoadSound = require(ReplicatedStorage.Shared.Modules.LoadSound)
 local LauncherComponent = require(script.Parent.Launcher)
+local WaitForTargetPosition = require(ReplicatedStorage.Shared.Modules.WaitForTargetPosition)
 
 --[ Extensions ]--
 local TroveExtension = require(ReplicatedStorage.Shared.Extensions.TroveExtension)
@@ -37,22 +38,13 @@ type Friendly = BasePart & {
 	},
 }
 
---[ Classes & Services ]--
-
---[ Object References ]--
-
 --[ Constants ]--
 
 local SCROLL_TWEEN_INFO: TweenInfo = TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
 local DEFAULT_ORIGIN: Vector3 = Vector3.new(25, 25, -75)
 local FRIENDLY_TAG: string = "SpawnedFriendly"
 local ATTACK_CHARGE_TIME: number = 5
-local ATTACK_CHANCE_MAX: number = 5
 local ATTACK_COOLDOWN: number = 15
-
---[ Variables ]--
-
---[ Shorthands ]--
 
 --[ Local Functions ]--
 
@@ -100,12 +92,6 @@ function UFO:_createScrollTween(): Tween
 	return self._trove:Add(TweenService:Create(self.AlignPosition, SCROLL_TWEEN_INFO, {
 		Position = scrollOffset,
 	}))
-end
-
-function UFO:_awaitGoalReached(goal: Vector3): nil
-	while (self.AlignPosition.Position - goal).Magnitude > 1 do
-		task.wait()
-	end
 end
 
 --[[
@@ -230,6 +216,9 @@ function UFO:AttackFriendly(target: Friendly)
 		return
 	end
 
+	-- Store target/friendly type
+	local friendlyType: string = target.Name
+
 	-- Set attacking attribute to true
 	self.Instance:SetAttribute("Attacking", true)
 	self:StopScrolling()
@@ -240,7 +229,7 @@ function UFO:AttackFriendly(target: Friendly)
 	self.AlignPosition.Position = goalPosition
 
 	-- Wait for UFO to reach goal position
-	self:_awaitGoalReached(goalPosition)
+	WaitForTargetPosition(self.AlignPosition, goalPosition)
 
 	-- Beam target up to UFO
 	target.Anchored = false
@@ -258,12 +247,14 @@ function UFO:AttackFriendly(target: Friendly)
 	end
 
 	-- Disable particles upon target entering UFO
-	self.Instance.Touched:Wait()
+	-- Use WaitForTargetPosition over .Touched:Wait() as it covers the target not existing anymore and ignores collisions from eggs
+	WaitForTargetPosition(target, self.AlignPosition.Position)
 	self:_setParticlesEnabled(false)
 
-	-- Store target type and destroy target
-	local friendlyType: string = target.Name
-	target:Destroy()
+	-- Destroy target if target still exists
+	if target then
+		target:Destroy()
+	end
 
 	-- Attack random player with captured friendly
 	local randomPlayer: Player = GetRandomPlayer()
