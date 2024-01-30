@@ -27,7 +27,10 @@ local DataService
 --[ Root ]--
 local GameService = Knit.CreateService({
 	Name = "GameService",
-	Client = {},
+	Client = {
+		StartGame = Knit.CreateSignal(),
+		EndGame = Knit.CreateSignal(),
+	},
 
 	-- Create trove for cleaning up connections after game ends
 	_gameTrove = Trove.new(),
@@ -315,9 +318,16 @@ function GameService:KnitStart()
 	-- Get DataService within KnitStart to prevent race condition
 	DataService = Knit.GetService("DataService")
 
-	self:StartGame("Basic")
+	-- These signals are only in-place for the singleplayer menu. In a multiplayer experience, I'd use a lobby system to teleport players ingame and start the game based on the selected level.
+	self.Client.StartGame:Connect(function(levelName: string)
+		self:StartGame(levelName)
+	end)
 
-	-- Give players launchers
+	self.Client.EndGame:Connect(function()
+		self:EndGame()
+	end)
+
+	-- Give players ingame launchers
 	observeCharacter(function(player: Player, character: Model)
 		local playerData = DataService:GetPlayerData(player)
 
