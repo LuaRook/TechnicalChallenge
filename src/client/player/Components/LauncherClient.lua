@@ -91,6 +91,11 @@ function LauncherClient:Start()
 			return Enum.ContextActionResult.Pass
 		end
 
+		-- Ignore input if player isn't playing
+		if not self.Player:GetAttribute("IsPlaying") then
+			return Enum.ContextActionResult.Pass
+		end
+
 		-- Determine mouse position and relay to server
 		local mousePosition: Vector3 = GetMousePosition(self.Character)
 		self.Server.Fire:Fire(mousePosition)

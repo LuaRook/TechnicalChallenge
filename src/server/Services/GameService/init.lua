@@ -6,12 +6,19 @@
 
 	Description:
 		Handles gameplay logic such as level selection and spawning.
+		This service is a bit lengthy and I'd likely fragment it up
+		to make it easier for other developers to use.
+
+		In addition, this service was made with singleplayer in mind;
+		however, the service is somewhat futureproofed for multi-player
+		conversion.
 --]]
 
 --[ Roblox Services ]--
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local SoundService = game:GetService("SoundService")
 
 --[ Dependencies ]--
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -20,6 +27,8 @@ local Observers = require(ReplicatedStorage.Packages.Observers)
 local RigFriendly = require(script.Parent.Parent.Modules.RigFriendly)
 local AttachWeapon = require(script.Parent.Parent.Modules.AttachWeapon)
 local LauncherComponent = require(script.Parent.Parent.Components.Launcher)
+local LoadSound = require(ReplicatedStorage.Shared.Modules.LoadSound)
+local MountHealthbar = require(ReplicatedStorage.Shared.Modules.MountHealthbar)
 
 --[ Services ]--
 local DataService
@@ -27,7 +36,10 @@ local DataService
 --[ Root ]--
 local GameService = Knit.CreateService({
 	Name = "GameService",
-	Client = {},
+	Client = {
+		StartGame = Knit.CreateSignal(),
+		EndGame = Knit.CreateSignal(),
+	},
 
 	-- Create trove for cleaning up connections after game ends
 	_gameTrove = Trove.new(),
@@ -71,15 +83,15 @@ local observeCharacter = Observers.observeCharacter
 
 local function SaveHighScore(player: Player)
 	-- Check if player data exists
-	local playerData = DataService:GetPlayerData(player)
-	if not playerData then
+	local playerReplica = DataService:GetPlayerReplica(player)
+	if not playerReplica then
 		return
 	end
 
 	-- Save current score if score is higher than saved high score
 	local currentScore: number = GameService:GetScore(player)
-	if playerData.HighScore < currentScore then
-		playerData.HighScore = currentScore
+	if playerReplica.Data.HighScore < currentScore then
+		playerReplica:SetValue("HighScore", currentScore)
 	end
 
 	-- Remove score attribute from player
@@ -132,7 +144,7 @@ end
 	@param player Player The player to get the score from.
 ]]
 function GameService:GetScore(player: Player)
-	return player:GetAttribute("Score")
+	return player:GetAttribute("Score") or 0
 end
 
 --[[
@@ -142,7 +154,7 @@ end
 	@param incrementBy number The amount to increment the players score by.
 ]]
 function GameService:IncrementScore(player: Player, incrementBy: number)
-	local existingScore: number = self:GetScore(player) or 0
+	local existingScore: number = self:GetScore(player)
 	return player:SetAttribute("Score", existingScore + incrementBy)
 end
 
@@ -186,6 +198,18 @@ function GameService:SpawnEnemy(enemyType: string, enemyParams: EnemyParams): Ba
 				Health = maxHealth * 2, -- Multiply previous health by two to make next enemy tougher
 			})
 		end)
+
+		-- Play sound for new enemy
+		local newEnemySound: Sound? = LoadSound("NewEnemy")
+		if newEnemySound and not newEnemySound.IsPlaying then
+			newEnemySound:Play()
+		end
+
+		-- Mount healthbar for enemy
+		local topAttachment: Attachment? = clonedEnemy:FindFirstChild("Top")
+		MountHealthbar(topAttachment or clonedEnemy, enemyHumanoid, {
+			Size = UDim2.fromScale(clonedEnemy.Size.X, 2.5), -- Scale healthbar on X-axis to model size
+		})
 	end
 
 	clonedEnemy.Parent = EnemyFolder
@@ -250,7 +274,7 @@ function GameService:StartGame(levelName: string)
 	-- Get level module from name
 	local dataModule: ModuleScript? = LevelConfigs:FindFirstChild(levelName)
 	if not dataModule then
-		return
+		return warn(`There is no level data for level "{levelName}"!`)
 	end
 
 	-- Require module and get level data
@@ -275,6 +299,9 @@ function GameService:StartGame(levelName: string)
 		-- Clear map
 		EnemyFolder:ClearAllChildren()
 		FriendlyFolder:ClearAllChildren()
+
+		-- Play game over sound
+		LoadSound("GameOver"):Play()
 	end)
 end
 
@@ -285,7 +312,7 @@ function GameService:EndGame()
 	-- Clean game trove
 	self._gameTrove:Clean()
 
-	-- Save high scores for players
+	-- Save player high scores. If this was a multiplayer game, I'd also respawn the players in this loop.
 	for _, player: Player in Players:GetPlayers() do
 		task.spawn(SaveHighScore, player)
 	end
@@ -311,9 +338,17 @@ function GameService:KnitStart()
 	-- Get DataService within KnitStart to prevent race condition
 	DataService = Knit.GetService("DataService")
 
-	self:StartGame("Basic")
+	-- These signals are only in-place for the singleplayer menu. In a multiplayer experience, I'd use a lobby system to teleport players ingame and start the game based on the selected level.
+	self.Client.StartGame:Connect(function(_: Player, levelName: string)
+		print("Game start now")
+		self:StartGame(levelName)
+	end)
 
-	-- Give players launchers
+	self.Client.EndGame:Connect(function()
+		self:EndGame()
+	end)
+
+	-- Give players ingame launchers
 	observeCharacter(function(player: Player, character: Model)
 		local playerData = DataService:GetPlayerData(player)
 

@@ -22,7 +22,7 @@ local DataController = Knit.CreateController({
 })
 
 --[ Exports & Types & Defaults ]--
-type Path = string | {string}
+type Path = string | { string }
 type Dictionary = { [string]: any }
 type Profile = {
 	Data: Dictionary,
@@ -54,13 +54,29 @@ function DataController:GetData(): Dictionary
 end
 
 --[[
-	Registers callback when the value at the specified path changes.
+	Returns data for the given key.
 
-	@param path Path The path to listen to changes for.
+	@param key string The data key to get.
+	@return any
+]]
+function DataController:GetValue(key: string): any
+	return self:GetData()[key]
+end
+
+--[[
+	Registers callback when the value at the specified key changes.
+
+	@param key string The data key to listen to changes for.
 	@param callback function The callback to be called whenever the value changes.
 ]]
-function DataController:OnValueChanged(path: Path, callback: (newValue: any, oldValue: any) -> ())
-	self:GetReplica():ListenToChange(path, callback)
+function DataController:OnValueChanged(key: string, callback: (newValue: any, oldValue: any) -> ())
+	-- Defer callback with initial value. Nests callback within task.defer to prevent desync.
+	task.defer(function()
+		callback(self:GetValue(key))
+	end)
+
+	-- Setup replica listener
+	return self:GetReplica():ListenToChange(key, callback)
 end
 
 --[ Initializers ]--
