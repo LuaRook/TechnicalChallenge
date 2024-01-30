@@ -19,6 +19,7 @@ local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 export type LabelProps = {
 	Text: string,
 	Font: Enum.Font?,
+	TextXAlignment: Enum.TextXAlignment?,
 	TextColor3: Color3?,
 	TextScaled: boolean?,
 	RichText: boolean?,
