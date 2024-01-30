@@ -22,6 +22,18 @@
     },
 
     "StarterPlayer": {
+      "$properties": {
+        "AutoJumpEnabled": false,
+        "CameraMaxZoomDistance": 4,
+        "CameraMinZoomDistance": 4,
+        "DevComputerMovementMode": "KeyboardMouse",
+        "CharacterWalkSpeed": 12,
+        "DevComputerCameraMovementMode": "KeyboardMouse",
+        "DevTouchMovementMode": "DPad",
+        "LoadCharacterAppearance": false,
+        "LoadCharacterLayeredClothing": "Disabled"
+      },
+
       "StarterCharacterScripts": {
         "$path": "src/client/character"
       },
