@@ -54,7 +54,10 @@ function DataController:GetData(): Dictionary
 end
 
 --[[
+	Returns data for the given key.
 
+	@param key string The data key to get.
+	@return any
 ]]
 function DataController:GetValue(key: string): any
 	return self:GetData()[key]
