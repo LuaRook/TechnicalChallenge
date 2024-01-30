@@ -107,7 +107,7 @@ function Launcher:_handleCastTerminating()
 			self.CastTerminating:Fire()
 
 			-- Destroy cosmetic bullet
-			task.delay(0.5, function()
+			task.delay(1.5, function()
 				cosmeticBullet:Destroy()
 			end)
 		end
