@@ -16,6 +16,7 @@ local React = require(ReplicatedStorage.Packages.React)
 
 --[ React Components ]--
 local Container = require(script.Parent.Essential.Container)
+local Button = require(script.Parent.Essential.Button)
 local Label = require(script.Parent.Essential.Label)
 
 --[ Return Component ]--
@@ -27,10 +28,21 @@ return function()
 			Font = Enum.Font.GothamBold,
 
 			AnchorPoint = Vector2.one * 0.5,
-			Position = UDim2.fromScale(0.5, 0.25),
-			Size = UDim2.fromScale(1, 0.05),
+			Position = UDim2.fromScale(0.5, 0.45),
+			Size = UDim2.fromScale(1, 0.1),
 		}),
 
 		-- Create play button (WIP)
+		Play = React.createElement(Button, {
+			Text = "Play",
+
+			AnchorPoint = Vector2.one * 0.5,
+			Position = UDim2.fromScale(0.5, 0.55),
+			Size = UDim2.fromScale(0.25, 0.1),
+
+			[React.Event.Activated] = function()
+				-- Add play method
+			end,
+		}),
 	})
 end
