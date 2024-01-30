@@ -285,9 +285,13 @@ function GameService:EndGame()
 	-- Clean game trove
 	self._gameTrove:Clean()
 
-	-- Save high scores for players
+	-- Respawn all player and save high scores
 	for _, player: Player in Players:GetPlayers() do
+		-- Save high score
 		task.spawn(SaveHighScore, player)
+
+		-- Respawn player
+		player:LoadCharacter()
 	end
 end
 
