@@ -13,3 +13,5 @@
 **Physics Integration:** Physics is an essential part of gameplay because both the attacking UFO and you use projectile-based weapons. Physics are integrated through the FastCastRedux dependency.
 
 **Humor:** Humor is implemented through the sound effects ingame as well as the game itself. The idea of a UFO stealing your cows and shooting them at you and using a chicken to shoot eggs are both comical aspects of gameplay.
+
+**Time Spent:** The project was worked on between Friday through Monday. In total, around 10 hours were spent working on the game.
