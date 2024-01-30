@@ -135,7 +135,7 @@ end
 	@param player Player The player to get the score from.
 ]]
 function GameService:GetScore(player: Player)
-	return player:GetAttribute("Score")
+	return player:GetAttribute("Score") or 0
 end
 
 --[[
@@ -145,7 +145,7 @@ end
 	@param incrementBy number The amount to increment the players score by.
 ]]
 function GameService:IncrementScore(player: Player, incrementBy: number)
-	local existingScore: number = self:GetScore(player) or 0
+	local existingScore: number = self:GetScore(player)
 	return player:SetAttribute("Score", existingScore + incrementBy)
 end
 
@@ -288,13 +288,9 @@ function GameService:EndGame()
 	-- Clean game trove
 	self._gameTrove:Clean()
 
-	-- Respawn all player and save high scores
+	-- Save player high scores. If this was a multiplayer game, I'd also respawn the players in this loop.
 	for _, player: Player in Players:GetPlayers() do
-		-- Save high score
 		task.spawn(SaveHighScore, player)
-
-		-- Respawn player
-		player:LoadCharacter()
 	end
 end
 

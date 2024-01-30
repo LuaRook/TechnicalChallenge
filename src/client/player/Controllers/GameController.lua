@@ -72,7 +72,7 @@ local function CharacterAdded(character: Model)
 	WaistOverride = Waist.C0
 
 	-- End game once character has been added
-
+	GameController:EndGame()
 
 	-- Prevent character rotation
 	Humanoid.AutoRotate = false
@@ -98,9 +98,16 @@ local function CameraStepped()
 	Camera.CameraType = if isPlaying then Enum.CameraType.Attach else Enum.CameraType.Scriptable
 	Humanoid.CameraOffset = if isPlaying then CAMERA_OFFSET else Vector3.zero
 
+	-- Fix camera orientation not resetting on menu
+	if not isPlaying then
+		Camera.CFrame = CFrame.new(Camera.CFrame.Position)
+	end
+
 	-- Update body if waist exists
 	if Waist then
-		Waist.C0 = Waist.C0:Lerp(WaistOverride * CFrame.Angles(Camera.CFrame.LookVector.Y, 0, 0), 0.35)
+		Waist.C0 = if isPlaying
+			then Waist.C0:Lerp(WaistOverride * CFrame.Angles(Camera.CFrame.LookVector.Y, 0, 0), 0.35)
+			else WaistOverride
 	end
 end
 
