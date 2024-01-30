@@ -43,8 +43,8 @@ type Friendly = BasePart & {
 local SCROLL_TWEEN_INFO: TweenInfo = TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
 local DEFAULT_ORIGIN: Vector3 = Vector3.new(25, 25, -75)
 local FRIENDLY_TAG: string = "SpawnedFriendly"
-local ATTACK_CHARGE_TIME: number = 5
-local ATTACK_COOLDOWN: number = 15
+local ATTACK_CHARGE_TIME: number = 2.5
+local ATTACK_COOLDOWN: number = 7.5
 
 --[ Local Functions ]--
 
