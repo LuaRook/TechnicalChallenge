@@ -91,8 +91,8 @@ function LauncherClient:Start()
 			return Enum.ContextActionResult.Pass
 		end
 
-		-- Ignore input if player is on menu
-		if self.Player:GetAttribute("OnMenu") then
+		-- Ignore input if player isn't playing
+		if not self.Player:GetAttribute("IsPlaying") then
 			return Enum.ContextActionResult.Pass
 		end
 
