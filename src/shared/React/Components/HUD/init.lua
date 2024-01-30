@@ -41,8 +41,20 @@ return function()
 
 	-- Update values
 	React.useEffect(function()
-		observeAttribute(LocalPlayer, "Score", setScore) -- Update score
-		DataController:OnValueChanged("HighScore", setHighScore) -- Update high score
+		-- Update values
+		local attributeCleanup = observeAttribute(LocalPlayer, "Score", setScore) -- Update score
+		local highScoreConnection = DataController:OnValueChanged("HighScore", setHighScore) -- Update high score
+
+		-- Cleanup connections
+		return function()
+			if attributeCleanup then
+				attributeCleanup()
+			end
+			if highScoreConnection then
+				highScoreConnection:Disconnect()
+				highScoreConnection = nil
+			end
+		end
 	end)
 
 	-- Create HUD container
