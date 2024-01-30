@@ -13,11 +13,15 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --[ Dependencies ]--
 local React = require(ReplicatedStorage.Packages.React)
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 --[ React Components ]--
 local Container = require(script.Parent.Essential.Container)
 local Button = require(script.Parent.Essential.Button)
 local Label = require(script.Parent.Essential.Label)
+
+--[ Services & Controllers ]--
+local GameController = Knit.GetController("GameController")
 
 --[ Return Component ]--
 return function()
@@ -41,7 +45,8 @@ return function()
 			Size = UDim2.fromScale(0.25, 0.1),
 
 			[React.Event.Activated] = function()
-				-- Add play method
+				-- Start game
+				GameController:StartGame("Basic")
 			end,
 		}),
 	})

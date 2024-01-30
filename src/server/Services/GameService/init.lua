@@ -253,7 +253,7 @@ function GameService:StartGame(levelName: string)
 	-- Get level module from name
 	local dataModule: ModuleScript? = LevelConfigs:FindFirstChild(levelName)
 	if not dataModule then
-		return
+		return warn(`There is no level data for level "{levelName}"!`)
 	end
 
 	-- Require module and get level data
@@ -319,7 +319,8 @@ function GameService:KnitStart()
 	DataService = Knit.GetService("DataService")
 
 	-- These signals are only in-place for the singleplayer menu. In a multiplayer experience, I'd use a lobby system to teleport players ingame and start the game based on the selected level.
-	self.Client.StartGame:Connect(function(levelName: string)
+	self.Client.StartGame:Connect(function(_: Player, levelName: string)
+		print("Game start now")
 		self:StartGame(levelName)
 	end)
 
