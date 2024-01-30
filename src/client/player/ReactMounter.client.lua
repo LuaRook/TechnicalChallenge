@@ -51,6 +51,6 @@ Knit.OnStart():andThen(function()
 	App = require(ReplicatedStorage.Shared.React.Components.App)
 
 	-- Render React app
-	local Root = ReactRoblox.createRoot(AppUI)
+	local Root: ReactRoblox.RootType = ReactRoblox.createRoot(AppUI)
 	Root:render(React.createElement(App))
 end)
