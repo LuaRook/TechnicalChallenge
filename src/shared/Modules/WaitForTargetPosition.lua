@@ -10,7 +10,7 @@
 
 --[ Constants ]--
 
-local PROXIMITY: number = 0.5
+local PROXIMITY: number = 1
 
 --[ Export ]--
 
