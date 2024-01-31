@@ -1,4 +1,4 @@
-# Rook Suit Up Challenge
+# Rook's Suit Up Challenge
 **Game:** Farm Defense
 
 **Objective:** Defend yourself against a UFO abducting your cows and shooting them at you! Use your chicken gun to shoot eggs at the UFO and bring it down!
@@ -12,8 +12,11 @@
 
 **GitHub Usage:** I utilized Pull Requests and Conventional Commit messages for this project. As such, you can look at any pull request and look at individual commits to clearly see how I built the game up from scratch.
 
-**Physics Integration:** Physics is an essential part of gameplay because both the attacking UFO and you use projectile-based weapons. Physics are integrated through the FastCastRedux dependency.
+**Physics Integration:** Physics is an essential part of gameplay because both the attacking UFO and you use projectile-based weapons. Physics are integrated through the FastCastRedux dependency. In addition to this, you can control how far your projectile can go by aiming up or down
 
 **Humor:** Humor is implemented through the sound effects ingame as well as the game itself. The idea of a UFO stealing your cows and shooting them at you and using a chicken to shoot eggs are both comical aspects of gameplay.
 
+**Future Plans:** If I were to ever revisit this game, there's some gameplay changes I'd love to make. First, I'd add a lobby system so multiplayer could be implemented without hastle and you can jump right into the game without waiting for the current round to end. In addition, I'd add new animals such as sheep and pigs as the codebase is modular & would allow for such. I'd also add player powerups so they can increase their damage or regenerate some health. I'd also add greater feedback for damaging both players and enemies (likely a red highlight alongside damage sounds). Finally, I'd add some more attacks to the UFO and potentially even an alien humanoid that runs at you to try and jam your chicken launcher.
+
 **Time Spent:** The project was worked on between Friday through Monday. In total, around 10 hours were spent working on the game.
+
