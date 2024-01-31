@@ -146,6 +146,9 @@ function Launcher:Fire(mousePosition: Vector3)
 		trail.Enabled = true
 	end
 
+	-- Add cosmetic bullet to trove
+	self._trove:Add(cosmeticBullet)
+
 	-- Play firing sound
 	if self.FiringSound then
 		self.FiringSound:Play()
