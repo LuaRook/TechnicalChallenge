@@ -1,6 +1,4 @@
-# Rook's Suit Up Challenge
-**Game:** Farm Defense
-
+# Farm Defense
 **Objective:** Defend yourself against a UFO abducting your cows and shooting them at you! Use your chicken gun to shoot eggs at the UFO and bring it down!
 
 **Supported Platforms:** PC, Mobile, and Console
@@ -18,5 +16,5 @@
 
 **Future Plans:** If I were to ever revisit this game, there's some gameplay changes I'd love to make. First, I'd add a lobby system so multiplayer could be implemented without hastle and you can jump right into the game without waiting for the current round to end. In addition, I'd add new animals such as sheep and pigs as the codebase is modular & would allow for such. I'd also add player powerups so they can increase their damage or regenerate some health. I'd also add greater feedback for damaging both players and enemies (likely a red highlight alongside damage sounds). Finally, I'd add some more attacks to the UFO and potentially even an alien humanoid that runs at you to try and jam your chicken launcher.
 
-**Time Spent:** The project was worked on between Friday through Monday. In total, around 10 hours were spent working on the game.
+**Time Spent:** In total, around 10 hours were spent working on the game across four days.
 
